@@ -1,0 +1,65 @@
+directories:
+  persist_vector_directory: data/vector_db
+  csv_product_directory: data/data_csv
+  text_product_directory: data/data_text
+  
+llm_config:
+  rag_model: llama3-70b-8192
+  chatchit_model: mixtral-8x7b-32768
+  temperature_rag: 0.0
+  temperature_chat: 1
+  max_token: 1024
+
+retriever_config:
+  similarity_score: 0.5
+  embedding_model: BAAI/bge-base-en-v1.5
+  vector_embed_size: 768
+  top_k: 5
+  score_thres: 0.7
+
+chunk_config:
+  chunk_size: 1248
+  chunk_overlap: 200
+
+product:
+  id_2_name: {
+    1: "cong_nghe_thong_tin_clc",
+    2: "du_lich_dia_chat",
+    3: "dia_chat_hoc",
+    4: "ky_thuat_co_dien_tu",
+    5: "ky_thuat_co_khi_dong_luc",
+    6: "ky_thuat_o_to",
+    7: "ky_thuat_robot_va_tri_tue_nhan_tao",
+    8: "khoa_hoc_du_lieu",
+    9: "cong_nghe_thong_tin",
+    10: "ky_thuat_tai_nguyen_nuoc",
+    11: "ky_thuat_vat_lieu",
+    12: "ky_thuat_cong_trinh_giao_thong",
+    13: "an_toan_ve_sinh_lao_dong",
+    14: "cong_nghe_ky_thuat_dien_dien_tu",
+    15: "cong_nghe_ky_thuat_hoa_hoc",
+    16: "cong_nghe_so_tham_do_va_khai_thac_tai_nguyen_thien_nhien",
+    17: "cong_nghe_so_tham_do_va_khai_thac_tai_nguyen_thien_nhien",
+    18: "dia_ky_thuat_xay_dung",
+    19: "dia_tin_hoc",
+    20: "hoa_duoc",
+    21: "ke_toan",
+    22: "ky_thuat_dau_khi",
+    23: "ky_thuat_dia_chat",
+    24: "ky_thuat_dia_vat_ly",
+    25: "ky_thuat_dien",
+    26: "ky_thuat_dieu_khien_va_tu_dong_hoa",
+    27: "ky_thuat_hoa_hoc_chuong_trinh_clc",
+    28: "ky_thuat_mo",
+    29: "ky_thuat_moi_truong",
+    30: "ky_thuat_tuyen_khoang",
+    31: "ky_thuat_trac_dia_ban_do",
+    32: "ky_thuat_xay_dung",
+    33: "nganh_quan_ly_du_lieu_khoa_hoc_trai_dat",
+    34: "nganh_quan_ly_dat_dai",
+    35: "quan_tri_kinh_doanh",
+    36: "tai_chinh_ngan_hang",
+    37: "quan_ly_tai_nguyen_va_moi_truong",
+    0: "LLM",
+    -1: "data_education"
+}
