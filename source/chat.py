@@ -4,8 +4,8 @@ from configs.load_config import LoadConfig
 from source.utils.base_model import GradeReWrite
 from source.utils.prompt import PROMPT_HISTORY, PROMPT_HEADER
 
+
 APP_CFG = LoadConfig()
-llm = APP_CFG.load_rag_model()
 memory = ConversationBufferWindowMemory(memory_key="chat_history", k=3)
 
 def get_history():
@@ -22,9 +22,12 @@ def rewrite_query(query: str, history: str) -> str:
     Return:
         trả về câu hỏi được viết lại.
     """
-    llm_with_output = llm.with_structured_output(GradeReWrite)
+    llm_with_output = APP_CFG.load_rewrite_model().with_structured_output(GradeReWrite)
     query_rewrite = llm_with_output.invoke(PROMPT_HISTORY.format(question=query, chat_history=history)).rewrite
+    print(query_rewrite)
     return query_rewrite
+    
+
 
 
 def chat_with_history(query: str, history):
@@ -48,6 +51,9 @@ def chat_with_history(query: str, history):
         prompt = template.format(query=query)
         response = APP_CFG.load_chatchit_model().invoke(prompt).content
         
+        print(response)
+        print("-Finish-")
+
         memory.chat_memory.add_user_message(query)
         memory.chat_memory.add_ai_message(response)
         history.append((query, response))
@@ -55,14 +61,18 @@ def chat_with_history(query: str, history):
     else:
         prompt_final = PROMPT_HEADER.format(question=query_rewrite, context=context)
 
-        response = llm.invoke(prompt_final).content
+        response = APP_CFG.load_rag_model().invoke(prompt_final).content
 
+        print(response)
+        print("-Finish-")
+          
         memory.chat_memory.add_user_message(query)
         memory.chat_memory.add_ai_message(response)
 
         history.append((query, response))
 
     return "", history
+
 
 # def chat_with_history(query: str, history):
 #     history_conversation = get_history()
@@ -71,7 +81,8 @@ def chat_with_history(query: str, history):
 #     print(context)
 #     prompt_final = PROMPT_HEADER.format(question=query_rewrite, context=context)
 
-#     response = llm.invoke(prompt_final).content
+#     response = APP_CFG.load_rag_model().invoke(prompt_final).content
+#     # response = APP_CFG.load_openai_model().invoke(prompt_final).content
 
 #     memory.chat_memory.add_user_message(query)
 #     memory.chat_memory.add_ai_message(response)
@@ -81,6 +92,3 @@ def chat_with_history(query: str, history):
 #     return "", history
 
 
-
-# response = chat_with_history(query="Tôi muốn mua điều hòa")
-# print(response)

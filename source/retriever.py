@@ -17,7 +17,7 @@ APP_CONFIG = LoadConfig()
 dotenv.load_dotenv()
 
 
-def get_tool(query: str):
+def get_tool(query: str) -> list:
     """
     Arg:
         query: Câu truy vấn của người dùng. Sử dụng LLM để phân loại câu hỏi thuộc về ngành học nào.
@@ -25,8 +25,8 @@ def get_tool(query: str):
         danh sách id của ngành học
     """
     prompt = PROMPT_CLF_PRODUCT.format(query=query)
-    llm = APP_CONFIG.load_chatchit_model().with_structured_output(GradeID)
-    # llm = APP_CONFIG.load_openai_model().with_structured_output(GradeID)
+    # llm = APP_CONFIG.load_chatchit_model().with_structured_output(GradeID)
+    llm = APP_CONFIG.load_openai_model().with_structured_output(GradeID)
     output = llm.invoke(prompt)
     return output.ID
     # pattern = r'-?\d+(?:\.\d+)?'
@@ -57,13 +57,14 @@ def init_retriever(vector_db: Chroma, data_chunked: RecursiveCharacterTextSplitt
     ensemble_retriever = EnsembleRetriever(
         retrievers=[retriever_vanilla, retriever_mmr, retriever_BM25], weights=[0.3, 0.3, 0.4]
 )
-    # rerank with cohere
-    compressor = CohereRerank(cohere_api_key=os.getenv("COHERE_API_KEY"))
-    compression_retriever = ContextualCompressionRetriever(
-        base_compressor=compressor, 
-        base_retriever=ensemble_retriever
-    )
-    return compression_retriever
+#     # rerank with cohere
+#     compressor = CohereRerank(cohere_api_key=os.getenv("COHERE_API_KEY"))
+#     compression_retriever = ContextualCompressionRetriever(
+#         base_compressor=compressor, 
+#         base_retriever=ensemble_retriever
+#     )
+    # return compression_retriever
+    return ensemble_retriever
 
 
 def get_context(query: str):
@@ -74,24 +75,21 @@ def get_context(query: str):
         phần context liên quan đến query cho llm
     """
 
-    number = np.unique(get_tool(query=query))
+    list_number = get_tool(query=query)
 
-    print(number)
+    print(list_number)
     # print(APP_CONFIG.id_2_name[number[0]])
-
     data_chunked, db = None, None
-    if len(number) == 1 and number[0]== 0: # câu hỏi kh liên quan đến sản phẩm, cho llm tự trả lời
+    if len(list_number) == 0 or (len(list_number) == 1 and list_number[0]== 0) : # câu hỏi kh liên quan đến sản phẩm, cho llm tự trả lời
         return ""
-    elif len(number) > 1 : # 2 sản phẩm trở lên, retrieval vào tất cả sản phẩm
+    elif len(list_number) > 1 : # 2 sản phẩm trở lên, retrieval vào tất cả sản phẩm
         data_chunked, db = create_db()
     else: # truy cập vào vectordb của từng sản phẩm
-        vector_db_name = APP_CONFIG.id_2_name[number[0]]
+        vector_db_name = APP_CONFIG.id_2_name[list_number[0]]
         data_chunked, db = create_sub_db(vector_db_name)
 
     retriever = init_retriever(vector_db=db, data_chunked=data_chunked)
     contents = retriever.invoke(input=query)
 
-    final_contents = ""
-    for content in contents: 
-        final_contents = final_contents + content.page_content if content.metadata['relevance_score'] > 0.5 else final_contents + ""
+    final_contents = "\n\n".join(doc.page_content for doc in contents)
     return final_contents
